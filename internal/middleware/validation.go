@@ -4,7 +4,6 @@ import (
 	"assignment/internal/constants"
 	"assignment/internal/models"
 	"assignment/internal/utils"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +23,7 @@ func GetTransactionID(c *gin.Context) string {
 	return transactionID
 }
 
-func AuthorizeCreateEmployeeRequest() gin.HandlerFunc {
+func ValidateCreateEmployeeRequest() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		// validate the body params
@@ -51,14 +50,31 @@ func AuthorizeCreateEmployeeRequest() gin.HandlerFunc {
 	}
 }
 
+func ValidateUpdateEmployeeRequest() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		// validate the body params
+		var employee models.Employee
+		err := ctx.ShouldBindBodyWith(&employee, binding.JSON)
+		if err != nil {
+			utils.RespondWithError(ctx, http.StatusBadRequest, constants.InvalidBody)
+			return
+		}
+
+		if employee.ID == "" {
+			utils.RespondWithError(ctx, http.StatusBadRequest, "employee Id is missing")
+		}
+
+		ctx.Next()
+	}
+}
+
 func ValidateEmployeeID() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		fmt.Println("employeeID")
-		employeeID := ctx.Param("id")
-		fmt.Println("employeeID : ", employeeID)
-		// Validate request body
-		if employeeID == "" {
 
+		employeeID := ctx.Param("id")
+		// Validate request body
+		if employeeID == "" || employeeID == ":" {
 			utils.RespondWithError(ctx, http.StatusBadRequest, "employee Id is missing the request")
 			return
 		}

@@ -3,6 +3,7 @@ package server
 import (
 	"assignment/internal/config"
 	"assignment/internal/constants"
+	"assignment/internal/middleware"
 	"assignment/internal/service"
 	"context"
 	"log"
@@ -39,12 +40,15 @@ func registerUpdateEmployeeEndPoints(handler gin.IRoutes) {
 func Start() {
 	plainHandler := gin.New()
 
-	employeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery())
+	createEmployeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery()).Use(middleware.ValidateCreateEmployeeRequest())
+	registerCreateEmployeeEndPoints(createEmployeeServiceHandler)
+	
+	GetAndDeleteEmployeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery()).Use(middleware.ValidateEmployeeID())
+	registerGetEmployeeByIDEndPoints(GetAndDeleteEmployeeServiceHandler)
+	registerDeleteEmployeeEndPoints(GetAndDeleteEmployeeServiceHandler)
 
-	registerCreateEmployeeEndPoints(employeeServiceHandler)
-	registerGetEmployeeByIDEndPoints(employeeServiceHandler)
-	registerDeleteEmployeeEndPoints(employeeServiceHandler)
-	registerUpdateEmployeeEndPoints(employeeServiceHandler)
+	updateEmployeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery()).Use(middleware.ValidateUpdateEmployeeRequest())
+	registerUpdateEmployeeEndPoints(updateEmployeeServiceHandler)
 
 	cfg := config.GetConfig()
 	srv := &http.Server{
