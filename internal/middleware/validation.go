@@ -46,7 +46,7 @@ func AuthorizeCreateEmployeeRequest() gin.HandlerFunc {
 		if employee.Salary == nil {
 			utils.RespondWithError(ctx, http.StatusBadRequest, "employee salary is missing")
 		}
-		
+
 		ctx.Next()
 	}
 }

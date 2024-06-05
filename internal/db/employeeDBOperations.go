@@ -38,7 +38,7 @@ func (p postgres) CreateEmployee(ctx *gin.Context, employee models.Employee) (st
 
 func (p postgres) DeleteEmployee(ctx *gin.Context, employeeId string) *employeeerror.EmployeeError {
 	txid := ctx.Request.Header.Get("TransactionID")
-	
+
 	// Convert employeeId to integer and handle any errors
 	empId, _ := strconv.Atoi(employeeId)
 
@@ -58,7 +58,6 @@ func (p postgres) DeleteEmployee(ctx *gin.Context, employeeId string) *employeee
 	utils.Logger.Info(fmt.Sprintf("Successfully deleted employee entry from db, txid: %v\n", txid))
 	return nil
 }
-
 
 func (p postgres) GetEmployeeByID(ctx *gin.Context, employeeId string) (models.Employee, *employeeerror.EmployeeError) {
 	txid := ctx.Request.Header.Get("TransactionID")
@@ -93,8 +92,9 @@ func (p postgres) GetEmployeeByID(ctx *gin.Context, employeeId string) (models.E
 	return *employee, nil
 
 }
+
 // func (p postgres) UpdateEmployee(ctx *gin.Context, employee models.Employee) (models.Employee, *employeeerror.EmployeeError) {
-	
+
 // 	return models.Employee{}, nil
 // }
 
