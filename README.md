@@ -86,6 +86,17 @@ curl -i -k -X DELETE \
   -H "content-type: application/json" 
 ```
 
+List Employees Record
+
+```
+curl -i -k -X GET \
+  http://0.0.0.0:8080/v1/employees/?page=2&pagesize=10 \
+  -H "transaction-id: 288a59c1-b826-42f7-a3cd-bf2911a5c351" \
+  -H "content-type: application/json"
+```
+
+
+
 ## Project Structure
 
 The project follows a standard Go project structure:

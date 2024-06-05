@@ -19,6 +19,7 @@ type EmployeeDBService interface {
 	DeleteEmployee(*gin.Context, string) *employeeerror.EmployeeError
 	GetEmployeeByID(*gin.Context, string) (models.Employee, *employeeerror.EmployeeError)
 	UpdateEmployee(*gin.Context, models.Employee) (models.Employee, *employeeerror.EmployeeError)
+	ListEmployee(*gin.Context, int, int) ([]models.Employee, *employeeerror.EmployeeError)
 }
 
 func New() (postgres, error) {

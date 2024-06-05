@@ -37,18 +37,26 @@ func registerUpdateEmployeeEndPoints(handler gin.IRoutes) {
 	handler.PUT(constants.ForwardSlash+strings.Join([]string{constants.ForwardSlash, constants.Employee}, constants.ForwardSlash), service.UpdateEmployee())
 }
 
+// Registering the ListEmployee EndPoints
+func registerListEmployeeEndPoints(handler gin.IRoutes) {
+	handler.GET(constants.ForwardSlash+strings.Join([]string{constants.ForwardSlash, constants.Employee}, constants.ForwardSlash), service.ListEmployees())
+}
+
 func Start() {
 	plainHandler := gin.New()
 
 	createEmployeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery()).Use(middleware.ValidateCreateEmployeeRequest())
 	registerCreateEmployeeEndPoints(createEmployeeServiceHandler)
-	
+
 	GetAndDeleteEmployeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery()).Use(middleware.ValidateEmployeeID())
 	registerGetEmployeeByIDEndPoints(GetAndDeleteEmployeeServiceHandler)
 	registerDeleteEmployeeEndPoints(GetAndDeleteEmployeeServiceHandler)
 
 	updateEmployeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery()).Use(middleware.ValidateUpdateEmployeeRequest())
 	registerUpdateEmployeeEndPoints(updateEmployeeServiceHandler)
+
+	listEmployeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery())
+	registerListEmployeeEndPoints(listEmployeeServiceHandler)
 
 	cfg := config.GetConfig()
 	srv := &http.Server{

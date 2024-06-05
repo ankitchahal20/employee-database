@@ -25,7 +25,7 @@ func GetTransactionID(c *gin.Context) string {
 
 func ValidateCreateEmployeeRequest() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		_ = GetTransactionID(ctx)
 		// validate the body params
 		var employee models.Employee
 		err := ctx.ShouldBindBodyWith(&employee, binding.JSON)
@@ -52,7 +52,7 @@ func ValidateCreateEmployeeRequest() gin.HandlerFunc {
 
 func ValidateUpdateEmployeeRequest() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		_ = GetTransactionID(ctx)
 		// validate the body params
 		var employee models.Employee
 		err := ctx.ShouldBindBodyWith(&employee, binding.JSON)
@@ -71,7 +71,7 @@ func ValidateUpdateEmployeeRequest() gin.HandlerFunc {
 
 func ValidateEmployeeID() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		_ = GetTransactionID(ctx)
 		employeeID := ctx.Param("id")
 		// Validate request body
 		if employeeID == "" || employeeID == ":" {
