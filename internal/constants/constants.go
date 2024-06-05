@@ -3,7 +3,7 @@ package constants
 const (
 	ForwardSlash = "/"
 	EmployeeAPI  = "employeeapi"
-	Employee     = "employee"
+	Employee     = "employees"
 
 	Version = "v1"
 

@@ -16,8 +16,8 @@ type postgres struct{ db *sql.DB }
 type EmployeeDBService interface {
 	// EmployeeDBService
 	CreateEmployee(*gin.Context, models.Employee) (string, *employeeerror.EmployeeError)
-	DeleteEmployee(*gin.Context, models.Employee) *employeeerror.EmployeeError
-	GetEmployeeByID(*gin.Context) ([]models.Employee, *employeeerror.EmployeeError)
+	DeleteEmployee(*gin.Context, string) *employeeerror.EmployeeError
+	GetEmployeeByID(*gin.Context, string) (models.Employee, *employeeerror.EmployeeError)
 	UpdateEmployee(*gin.Context) (string, *employeeerror.EmployeeError)
 }
 

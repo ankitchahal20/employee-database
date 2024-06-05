@@ -67,13 +67,65 @@ func (service *EmployeeService) createEmployee(ctx *gin.Context, employee models
 // Deletes an employee from the database or store by ID
 func DeleteEmployee() func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
+		txid := ctx.Request.Header.Get(constants.TransactionID)
+		employeeId := ctx.Param("id")
+		err := employeeClient.deleteEmployee(ctx, employeeId)
+		if err != nil {
+			utils.RespondWithError(ctx, err.Code, err.Message)
+			return
+		}
+
+		utils.Logger.Info(fmt.Sprintf("user has successfully deleted a note, txid : %v", txid))
+		ctx.Writer.WriteHeader(http.StatusOK)
 	}
+}
+
+func (service *EmployeeService) deleteEmployee(ctx *gin.Context, employeeId string) *employeeerror.EmployeeError {
+	txid := ctx.Request.Header.Get(constants.TransactionID)
+	
+	utils.Logger.Info(fmt.Sprintf("calling db layer for to check if employee Id exists, txid : %v", txid))
+	_, err := service.repo.GetEmployeeByID(ctx, employeeId)
+	if err != nil {
+		return err
+	}
+
+	utils.Logger.Info(fmt.Sprintf("calling db layer for employee deletion, txid : %v", txid))
+	err = service.repo.DeleteEmployee(ctx, employeeId)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Retrieves an employee from the database or store by ID
 func GetEmployeeByID() func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
+		txid := ctx.Request.Header.Get(constants.TransactionID)
+		employeeId := ctx.Param("id")
+		utils.Logger.Info(fmt.Sprintf("calling service layer for to get the employee details, txid : %v", txid))
+		employeeDetails, err := employeeClient.getEmployeeByID(ctx, employeeId)
+		if err != nil {
+			utils.RespondWithError(ctx, err.Code, err.Message)
+			return
+		}
+		ctx.JSON(http.StatusOK, map[string]string{
+			"employee_id": fmt.Sprintf("%v", employeeDetails.ID),
+			"employee_name": employeeDetails.Name,
+			"position": employeeDetails.Position,	
+		})
 	}
+}
+
+func (service *EmployeeService) getEmployeeByID(ctx *gin.Context, employeeId string) (models.Employee, *employeeerror.EmployeeError) {
+	txid := ctx.Request.Header.Get(constants.TransactionID)
+	
+	utils.Logger.Info(fmt.Sprintf("calling db layer for to get employee details, txid : %v", txid))
+
+	employeeDetails, err := service.repo.GetEmployeeByID(ctx, employeeId)
+	if err != nil {
+		return models.Employee{}, err
+	}
+	return employeeDetails, nil
 }
 
 // Updates the details of an existing employee

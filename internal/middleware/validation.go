@@ -4,6 +4,7 @@ import (
 	"assignment/internal/constants"
 	"assignment/internal/models"
 	"assignment/internal/utils"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -46,6 +47,22 @@ func AuthorizeCreateEmployeeRequest() gin.HandlerFunc {
 			utils.RespondWithError(ctx, http.StatusBadRequest, "employee salary is missing")
 		}
 		
+		ctx.Next()
+	}
+}
+
+func ValidateEmployeeID() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		fmt.Println("employeeID")
+		employeeID := ctx.Param("id")
+		fmt.Println("employeeID : ", employeeID)
+		// Validate request body
+		if employeeID == "" {
+
+			utils.RespondWithError(ctx, http.StatusBadRequest, "employee Id is missing the request")
+			return
+		}
+
 		ctx.Next()
 	}
 }

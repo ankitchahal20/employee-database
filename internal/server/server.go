@@ -24,12 +24,12 @@ func registerCreateEmployeeEndPoints(handler gin.IRoutes) {
 
 // Registering GetEmployeeByID EndPoints
 func registerGetEmployeeByIDEndPoints(handler gin.IRoutes) {
-	handler.GET(constants.ForwardSlash+strings.Join([]string{constants.ForwardSlash, constants.Employee}, constants.ForwardSlash), service.GetEmployeeByID())
+	handler.GET(constants.ForwardSlash+strings.Join([]string{constants.ForwardSlash, constants.Employee, constants.ForwardSlash, ":id"}, constants.ForwardSlash), service.GetEmployeeByID())
 }
 
 // Registering the DeleteEmployee EndPoints
 func registerDeleteEmployeeEndPoints(handler gin.IRoutes) {
-	handler.DELETE(constants.ForwardSlash+strings.Join([]string{constants.ForwardSlash, constants.Employee}, constants.ForwardSlash), service.DeleteEmployee())
+	handler.DELETE(constants.ForwardSlash+strings.Join([]string{constants.ForwardSlash, constants.Employee, constants.ForwardSlash, ":id"}, constants.ForwardSlash), service.DeleteEmployee())
 }
 
 // Registering the UpdateEmployee EndPoints
@@ -42,9 +42,9 @@ func Start() {
 
 	employeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery())
 
-	registerCreateEmployeeEndPoints(employeeServiceHandler.Use(middleware.AuthorizeCreateEmployeeRequest()))
+	registerCreateEmployeeEndPoints(employeeServiceHandler)
 	registerGetEmployeeByIDEndPoints(employeeServiceHandler)
-	registerDeleteEmployeeEndPoints(employeeServiceHandler)
+	registerDeleteEmployeeEndPoints(employeeServiceHandler.Use(middleware.ValidateEmployeeID()))
 	registerUpdateEmployeeEndPoints(employeeServiceHandler)
 
 	cfg := config.GetConfig()
