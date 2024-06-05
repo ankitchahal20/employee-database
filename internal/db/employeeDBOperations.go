@@ -176,54 +176,54 @@ func (p postgres) UpdateEmployee(ctx *gin.Context, employee models.Employee) (mo
 }
 
 func (p postgres) ListEmployee(ctx *gin.Context, page int, pageSize int) ([]models.Employee, *employeeerror.EmployeeError) {
-    txid := ctx.Request.Header.Get(constants.TransactionID)
+	txid := ctx.Request.Header.Get(constants.TransactionID)
 
-    // Calculate the offset based on the page number and page size
-    offset := (page - 1) * pageSize
+	// Calculate the offset based on the page number and page size
+	offset := (page - 1) * pageSize
 
-    // SQL query to list employee records with pagination
-    query := `SELECT id, name, position, salary, created_at, last_updated_at 
+	// SQL query to list employee records with pagination
+	query := `SELECT id, name, position, salary, created_at, last_updated_at 
                FROM employees 
                ORDER BY id 
                LIMIT $1 OFFSET $2`
 
-    // Execute the query with the specified page size and offset
-    rows, err := p.db.QueryContext(ctx, query, pageSize, offset)
-    if err != nil {
-        fmt.Println("Error executing query:", err)
-        return nil, &employeeerror.EmployeeError{
-            Code:    http.StatusInternalServerError,
-            Message: "Unable to retrieve employee records",
-            Trace:   txid,
-        }
-    }
-    defer rows.Close()
+	// Execute the query with the specified page size and offset
+	rows, err := p.db.QueryContext(ctx, query, pageSize, offset)
+	if err != nil {
+		fmt.Println("Error executing query:", err)
+		return nil, &employeeerror.EmployeeError{
+			Code:    http.StatusInternalServerError,
+			Message: "Unable to retrieve employee records",
+			Trace:   txid,
+		}
+	}
+	defer rows.Close()
 
-    // Iterate over the rows and scan the results into Employee structs
-    var employees []models.Employee
-    for rows.Next() {
-        var employee models.Employee
-        if err := rows.Scan(&employee.ID, &employee.Name, &employee.Position, &employee.Salary, &employee.CreatedAt, &employee.LastUpdatedAt); err != nil {
-            fmt.Println("Error scanning row:", err)
-            return nil, &employeeerror.EmployeeError{
-                Code:    http.StatusInternalServerError,
-                Message: "Error processing employee records",
-                Trace:   txid,
-            }
-        }
-        employees = append(employees, employee)
-    }
+	// Iterate over the rows and scan the results into Employee structs
+	var employees []models.Employee
+	for rows.Next() {
+		var employee models.Employee
+		if err := rows.Scan(&employee.ID, &employee.Name, &employee.Position, &employee.Salary, &employee.CreatedAt, &employee.LastUpdatedAt); err != nil {
+			fmt.Println("Error scanning row:", err)
+			return nil, &employeeerror.EmployeeError{
+				Code:    http.StatusInternalServerError,
+				Message: "Error processing employee records",
+				Trace:   txid,
+			}
+		}
+		employees = append(employees, employee)
+	}
 
-    // Check for any errors encountered during iteration
-    if err := rows.Err(); err != nil {
-        fmt.Println("Error iterating over rows:", err)
-        return nil, &employeeerror.EmployeeError{
-            Code:    http.StatusInternalServerError,
-            Message: "Error processing employee records",
-            Trace:   txid,
-        }
-    }
+	// Check for any errors encountered during iteration
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error iterating over rows:", err)
+		return nil, &employeeerror.EmployeeError{
+			Code:    http.StatusInternalServerError,
+			Message: "Error processing employee records",
+			Trace:   txid,
+		}
+	}
 
-    utils.Logger.Info(fmt.Sprintf("Successfully retrieved employee records from db (page %d, pageSize %d), txid: %v\n", page, pageSize, txid))
-    return employees, nil
+	utils.Logger.Info(fmt.Sprintf("Successfully retrieved employee records from db (page %d, pageSize %d), txid: %v\n", page, pageSize, txid))
+	return employees, nil
 }

@@ -185,7 +185,7 @@ func ListEmployees() func(ctx *gin.Context) {
 		page, _ := strconv.Atoi(ctx.Query("page"))
 
 		pagesize, _ := strconv.Atoi(ctx.Query("pagesize"))
-		
+
 		employeeDetails, err := employeeClient.listEmployees(ctx, page, pagesize)
 		if err != nil {
 			utils.RespondWithError(ctx, err.Code, err.Message)
