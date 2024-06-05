@@ -3,7 +3,6 @@ package server
 import (
 	"assignment/internal/config"
 	"assignment/internal/constants"
-	"assignment/internal/middleware"
 	"assignment/internal/service"
 	"context"
 	"log"
@@ -34,7 +33,7 @@ func registerDeleteEmployeeEndPoints(handler gin.IRoutes) {
 
 // Registering the UpdateEmployee EndPoints
 func registerUpdateEmployeeEndPoints(handler gin.IRoutes) {
-	handler.PATCH(constants.ForwardSlash+strings.Join([]string{constants.ForwardSlash, constants.Employee}, constants.ForwardSlash), service.UpdateEmployee())
+	handler.PUT(constants.ForwardSlash+strings.Join([]string{constants.ForwardSlash, constants.Employee}, constants.ForwardSlash), service.UpdateEmployee())
 }
 
 func Start() {
@@ -44,7 +43,7 @@ func Start() {
 
 	registerCreateEmployeeEndPoints(employeeServiceHandler)
 	registerGetEmployeeByIDEndPoints(employeeServiceHandler)
-	registerDeleteEmployeeEndPoints(employeeServiceHandler.Use(middleware.ValidateEmployeeID()))
+	registerDeleteEmployeeEndPoints(employeeServiceHandler)
 	registerUpdateEmployeeEndPoints(employeeServiceHandler)
 
 	cfg := config.GetConfig()

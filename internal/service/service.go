@@ -34,10 +34,10 @@ func CreateEmployee() func(ctx *gin.Context) {
 
 		txid := ctx.Request.Header.Get(constants.TransactionID)
 		utils.Logger.Info(fmt.Sprintf("received request for employee creation, txid : %v", txid))
-		var notes models.Employee
-		if err := ctx.ShouldBindBodyWith(&notes, binding.JSON); err == nil {
+		var employee models.Employee
+		if err := ctx.ShouldBindBodyWith(&employee, binding.JSON); err == nil {
 			utils.Logger.Info(fmt.Sprintf("user request for employee creation is unmarshalled successfully, txid : %v", txid))
-			employeeID, err := employeeClient.createEmployee(ctx, notes)
+			employeeID, err := employeeClient.createEmployee(ctx, employee)
 			if err != nil {
 				utils.RespondWithError(ctx, err.Code, err.Message)
 				return
@@ -131,5 +131,54 @@ func (service *EmployeeService) getEmployeeByID(ctx *gin.Context, employeeId str
 // Updates the details of an existing employee
 func UpdateEmployee() func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
+		txid := ctx.Request.Header.Get(constants.TransactionID)
+
+		utils.Logger.Info(fmt.Sprintf("received request for updating employee details, txid : %v", txid))
+		var employee models.Employee
+		if err := ctx.ShouldBindBodyWith(&employee, binding.JSON); err == nil {
+			utils.Logger.Info(fmt.Sprintf("user request for employee updation is unmarshalled successfully, txid : %v", txid))
+			employeeDetails, err := employeeClient.updateEmployee(ctx, employee)
+			if err != nil {
+				utils.RespondWithError(ctx, err.Code, err.Message)
+				return
+			}
+			ctx.JSON(http.StatusOK, map[string]string{
+				"employee_id": fmt.Sprintf("%v", employeeDetails.ID),
+				"employee_name": employeeDetails.Name,
+				"position": employeeDetails.Position,	
+			})
+			ctx.Writer.WriteHeader(http.StatusOK)
+
+		} else {
+			ctx.JSON(http.StatusBadRequest, gin.H{"Unable to marshal the request body": err.Error()})
+		}
+
+		// utils.Logger.Info(fmt.Sprintf("calling service layer to update the employee details, txid : %v", txid))
+		// employeeDetails, err := employeeClient.updateEmployee(ctx, employee)
+		// if err != nil {
+		// 	utils.RespondWithError(ctx, err.Code, err.Message)
+		// 	return
+		// }
+		// ctx.JSON(http.StatusOK, map[string]string{
+		// 	"employee_id": fmt.Sprintf("%v", employeeDetails.ID),
+		// 	"employee_name": employeeDetails.Name,
+		// 	"position": employeeDetails.Position,	
+		// })
 	}
+}
+
+func (service *EmployeeService) updateEmployee(ctx *gin.Context, employee models.Employee) (models.Employee, *employeeerror.EmployeeError) {
+	txid := ctx.Request.Header.Get(constants.TransactionID)
+	
+	utils.Logger.Info(fmt.Sprintf("calling db layer for to check if employee exists, txid : %v", txid))
+	_, err := service.repo.GetEmployeeByID(ctx, employee.ID)
+	if err != nil {
+		return models.Employee{}, err
+	}
+
+	employeeDetails, err := service.repo.UpdateEmployee(ctx, employee)
+	if err != nil {
+		return models.Employee{}, err
+	}
+	return employeeDetails, nil
 }

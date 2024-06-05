@@ -3,10 +3,13 @@ package db
 import (
 	employeeerror "assignment/internal/errors"
 	"assignment/internal/models"
+	"assignment/internal/utils"
 	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,7 +32,7 @@ func (p postgres) CreateEmployee(ctx *gin.Context, employee models.Employee) (st
 	}
 
 	id := strconv.Itoa(employeeID)
-	fmt.Printf("successfully added employee entry in db, txid: %v\n", txid)
+	utils.Logger.Info(fmt.Sprintf("successfully added employee entry in db, txid: %v\n", txid))
 	return id, nil
 }
 
@@ -52,7 +55,7 @@ func (p postgres) DeleteEmployee(ctx *gin.Context, employeeId string) *employeee
 		}
 	}
 
-	fmt.Printf("Successfully deleted employee entry from db, txid: %v\n", txid)
+	utils.Logger.Info(fmt.Sprintf("Successfully deleted employee entry from db, txid: %v\n", txid))
 	return nil
 }
 
@@ -86,10 +89,84 @@ func (p postgres) GetEmployeeByID(ctx *gin.Context, employeeId string) (models.E
 		}
 	}
 
-	fmt.Printf("Successfully retrieved employee entry from db, txid: %v\n", txid)
+	utils.Logger.Info(fmt.Sprintf("Successfully retrieved employee entry from db, txid: %v\n", txid))
 	return *employee, nil
 
 }
-func (p postgres) UpdateEmployee(ctx *gin.Context) (string, *employeeerror.EmployeeError) {
-	return "", nil
+// func (p postgres) UpdateEmployee(ctx *gin.Context, employee models.Employee) (models.Employee, *employeeerror.EmployeeError) {
+	
+// 	return models.Employee{}, nil
+// }
+
+// UpdateEmployee updates an employee's details
+func (p postgres) UpdateEmployee(ctx *gin.Context, employee models.Employee) (models.Employee, *employeeerror.EmployeeError) {
+	txid := ctx.Request.Header.Get("TransactionID")
+
+	// Build the dynamic update query
+	var fields []string
+	var args []interface{}
+	argID := 1
+
+	if employee.Name != "" {
+		fields = append(fields, fmt.Sprintf("name=$%d", argID))
+		args = append(args, employee.Name)
+		argID++
+	}
+	if employee.Position != "" {
+		fields = append(fields, fmt.Sprintf("position=$%d", argID))
+		args = append(args, employee.Position)
+		argID++
+	}
+	if employee.Salary != nil {
+		fields = append(fields, fmt.Sprintf("salary=$%d", argID))
+		args = append(args, *employee.Salary)
+		argID++
+	}
+	fields = append(fields, fmt.Sprintf("last_updated_at=$%d", argID))
+	args = append(args, time.Now())
+	argID++
+
+	// If no fields to update, return an error
+	if len(fields) == 0 {
+		return models.Employee{}, &employeeerror.EmployeeError{
+			Code:    http.StatusBadRequest,
+			Message: "No fields to update",
+			Trace:   txid,
+		}
+	}
+
+	// Add the ID to the arguments
+	args = append(args, employee.ID)
+
+	query := fmt.Sprintf("UPDATE employees SET %s WHERE id=$%d", strings.Join(fields, ", "), argID)
+	res, err := p.db.Exec(query, args...)
+	if err != nil {
+		fmt.Println("Error executing update query:", err)
+		return models.Employee{}, &employeeerror.EmployeeError{
+			Code:    http.StatusInternalServerError,
+			Message: "Unable to update employee record",
+			Trace:   txid,
+		}
+	}
+
+	// Check if any rows were affected
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		fmt.Println("Error checking rows affected:", err)
+		return models.Employee{}, &employeeerror.EmployeeError{
+			Code:    http.StatusInternalServerError,
+			Message: "Unable to verify update operation",
+			Trace:   txid,
+		}
+	}
+	if rowsAffected == 0 {
+		return models.Employee{}, &employeeerror.EmployeeError{
+			Code:    http.StatusNotFound,
+			Message: "Employee not found",
+			Trace:   txid,
+		}
+	}
+
+	utils.Logger.Info(fmt.Sprintf("Successfully updated employee entry in db, txid: %v\n", txid))
+	return employee, nil
 }
