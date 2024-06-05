@@ -3,6 +3,7 @@ package server
 import (
 	"assignment/internal/config"
 	"assignment/internal/constants"
+	"assignment/internal/middleware"
 	"assignment/internal/service"
 	"context"
 	"log"
@@ -41,7 +42,7 @@ func Start() {
 
 	employeeServiceHandler := plainHandler.Group(constants.ForwardSlash + constants.Version).Use(gin.Recovery())
 
-	registerCreateEmployeeEndPoints(employeeServiceHandler)
+	registerCreateEmployeeEndPoints(employeeServiceHandler.Use(middleware.AuthorizeCreateEmployeeRequest()))
 	registerGetEmployeeByIDEndPoints(employeeServiceHandler)
 	registerDeleteEmployeeEndPoints(employeeServiceHandler)
 	registerUpdateEmployeeEndPoints(employeeServiceHandler)

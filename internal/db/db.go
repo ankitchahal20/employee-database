@@ -21,20 +21,6 @@ type EmployeeDBService interface {
 	UpdateEmployee(*gin.Context) (string, *employeeerror.EmployeeError)
 }
 
-func (p postgres) CreateEmployee(ctx *gin.Context, notes models.Employee) (string, *employeeerror.EmployeeError) {
-	return "", nil
-}
-func (p postgres) DeleteEmployee(ctx *gin.Context, notes models.Employee) *employeeerror.EmployeeError {
-	return nil
-}
-
-func (p postgres) GetEmployeeByID(ctx *gin.Context) ([]models.Employee, *employeeerror.EmployeeError) {
-	return []models.Employee{}, nil
-}
-func (p postgres) UpdateEmployee(ctx *gin.Context) (string, *employeeerror.EmployeeError) {
-	return "", nil
-}
-
 func New() (postgres, error) {
 	cfg := config.GetConfig()
 	connString := "host=" + cfg.Database.Host + " " + "dbname=" + cfg.Database.DBname + " " + "password=" +
